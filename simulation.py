@@ -1,7 +1,10 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QPainter, QColor, QPixmap
+from PyQt5.QtCore import Qt, QElapsedTimer, pyqtSignal
+from individual import Individual
+from bird import Bird
 
 class Simulation(QWidget):
     
@@ -16,7 +19,10 @@ class Simulation(QWidget):
         super().__init__()
         
         self.initUI()
+#         self.initPainter()
         self.initSimulation()
+        self.painter = QPainter(self)
+#         self.painter.beg
         
     def initUI(self):
         
@@ -24,10 +30,10 @@ class Simulation(QWidget):
         self.setWindowTitle(self.title)
         self.setWindowIcon(QIcon('icon.png'))
           
-        self.setAutoFillBackground(True)
-        white = self.palette()
-        white.setColor(self.backgroundRole(), Qt.red)
-        self.setPalette(white)   
+#         self.setAutoFillBackground(True)
+#         white = self.palette()
+#         white.setColor(self.backgroundRole(), Qt.red)
+#         self.setPalette(white)   
     
         self.show()
         
@@ -35,4 +41,17 @@ class Simulation(QWidget):
         return self.time * self.k
     
     def initSimulation(self):
-        self.timer = QTimer()
+        self.timer = QElapsedTimer()
+        self.timer.start()
+        
+        self.individuals.append(Bird(len(self.individuals) + 1 , 400, 320, 0, 0))
+#         for i in range(1,4)
+
+    def drawFrame(self):
+        print(self.timer.elapsed())
+        for i in self.individuals:
+            i.draw(self.painter)
+
+#         self.update()
+        
+    
