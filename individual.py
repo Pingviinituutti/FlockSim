@@ -26,7 +26,7 @@ class Individual():
             self.angle = 90 * self.velocity.y()/abs(self.velocity.y())
         else:
             self.angle = math.atan(self.velocity.y()/self.velocity.x()) * 180/math.pi
-        print("ID: {id},unmodified angle: {ang:.2f}".format(id=self.id, ang=self.angle), end=', ')
+#         print("ID: {id},unmodified angle: {ang:.2f}".format(id=self.id, ang=self.angle), end=', ')
         if self.velocity.x() < 0:
             self.angle = 180 + self.angle
 

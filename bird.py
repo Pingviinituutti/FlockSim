@@ -17,8 +17,8 @@ class Bird(Individual):
         self.sprite.load('bird', 'png')
         
     def move(self, time):
-        if self.velocity.length() > self.max_speed:
-            self.velocity /= (self.velocity.length())
+#         if self.velocity.length() > self.max_speed:
+#             self.velocity /= (self.velocity.length())
         Individual.move(self, time)
         
     def draw(self, painter, screen_size):
@@ -28,16 +28,16 @@ class Bird(Individual):
         
         # calculate angle of bird
         self.calculateAngle()
-        print(self.position, end=', velocity: ')
-        print(self.velocity, end=', angle: ')
-        print(self.angle)
+#         print(self.position, end=', velocity: ')
+#         print(self.velocity, end=', angle: ')
+#         print(self.angle)
         painter.rotate(self.angle)
 
         painter.setPen(Qt.green)
         painter.drawLine(-300, 0, 300, 0)
         painter.drawLine(0, -300, 0, 300)
         rect = QRect(-64, -64, 128, 128)
-        painter.setPen(Qt.black)
+        painter.setPen(Qt.red)
         
         # velocity vector
         painter.drawLine(0, 0, 100, 0)
@@ -48,8 +48,6 @@ class Bird(Individual):
         painter.rotate(90)
         painter.setFont(QFont('Decorative', 10))
         painter.drawText(-self.sprite.width()/2, self.sprite.height()/2, str(self.id))
-        painter.restore()
-        painter.setPen(Qt.red)
         
         
         
