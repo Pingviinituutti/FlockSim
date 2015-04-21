@@ -6,5 +6,5 @@ if __name__ == '__main__':
     
     app = QApplication(sys.argv)
     sim = Simulation()
-    sim.drawFrame()
+#     sim.drawFrame()
     sys.exit(app.exec_())  

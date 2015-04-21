@@ -21,7 +21,7 @@ class Bird(Individual):
     def draw(self, painter):
 #         print(self.position)
         painter.drawPixmap(self.position.x(), self.position.y(), self.sprite)
-        painter.drawPixmap(0,0,self.sprite)
+#         painter.drawPixmap(0,0,self.sprite)
         
         
         
