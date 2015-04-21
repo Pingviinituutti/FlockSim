@@ -25,6 +25,7 @@ class Simulation(QWidget):
         self.individuals = []
         self.num_individuals = 2
         self.rules = []
+        self.scale = 1
         
         super().__init__()
         
@@ -46,8 +47,8 @@ class Simulation(QWidget):
     
     def initSimulation(self):
         size = self.size()
-        self.rules.append(Separation(1))
-        self.rules.append(Alignment(0.0001))
+#         self.rules.append(Separation(1))
+#         self.rules.append(Alignment(0.0001))
         self.rules.append(Cohesion(0.00001))
         for i in range(self.num_individuals):
 #             self.individuals.append(Bird(len(self.individuals) + 1 , random.randint(1, size.width()-1), random.randint(1, size.height()-1), random.randint(-5,5), random.randint(-5,5)))
@@ -75,9 +76,11 @@ class Simulation(QWidget):
             i.move(time*self.k)
 
     def drawFrame(self):
+        # define the presets for the painter and move origin to center of window
         painter = QPainter()
         painter.begin(self)
         painter.translate(self.size().width()/2, self.size().height()/2)
+        painter.scale(self.scale, self.scale)
         painter.save()
         
         self.drawCoordinateAxes(painter)    
@@ -139,6 +142,10 @@ class Simulation(QWidget):
                 self.ticker.stop()
             else:
                 self.resetTimer()
+        if e.key() == Qt.Key_Plus:
+            self.scale *= 2
+        if e.key() == Qt.Key_Minus:
+            self.scale /= 2
         
             
 #         if e.key() == Qt.Key_Space:
