@@ -1,5 +1,5 @@
 # from PyQt5.QtGui import QVector2D
-from PyQt5.QtGui import QPainter, QColor, QPixmap
+from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont
 from individual import Individual
 import math
 
@@ -26,44 +26,30 @@ class Bird(Individual):
 #         painter.translate(-self.sprite.width()/2, -self.sprite.height()/2)
         painter.translate(self.position.x(), self.position.y())
         
-        if self.velocity.x() == 0:
-            angle = 90 * self.velocity.y()/abs(self.velocity.y())
-        else:
-            angle = math.atan(self.velocity.y()/self.velocity.x()) * 180/math.pi
-        print("unmodified angle: {ang:.2f}".format(ang=angle), end=', ')
-        if self.velocity.x() < 0:
-            angle = 180 + angle
+        # calculate angle of bird
+        self.calculateAngle()
         print(self.position, end=', velocity: ')
         print(self.velocity, end=', angle: ')
-        print(angle) #, end=', transformed coordinates: ')
-#         angle = 10
-        painter.rotate(angle)
-#         cosa = math.cos(angle)
-#         sina = math.sin(angle)
-#         x2 = (self.position.x() * cosa + self.position.y() * sina)
-#         y2 = (self.position.x() * -sina + self.position.y() * cosa)
-#         print(x2,y2)
-#         painter.translate(x2,y2 )
-#         painter.translate(self.position.x(), self.position.y())
-#         painter.scale(4,4)
+        print(self.angle)
+        painter.rotate(self.angle)
 
         painter.setPen(Qt.green)
         painter.drawLine(-300, 0, 300, 0)
         painter.drawLine(0, -300, 0, 300)
         rect = QRect(-64, -64, 128, 128)
         painter.setPen(Qt.black)
+        
         # velocity vector
         painter.drawLine(0, 0, 100, 0)
         painter.drawLine(80, -20, 100, 0)
         painter.drawLine(80, 20, 100, 0) 
         painter.drawPixmap(-self.sprite.width()/2, -self.sprite.height()/2, self.sprite)
         painter.drawRect(rect)
-#         rect2 = QRect(-64,-64,128,128)
-#         painter.drawRect(rect2)
-#         painter.resetTransform()
+        painter.rotate(90)
+        painter.setFont(QFont('Decorative', 10))
+        painter.drawText(-self.sprite.width()/2, self.sprite.height()/2, str(self.id))
         painter.restore()
         painter.setPen(Qt.red)
-#         painter.drawPixmap(0,0,self.sprite)
         
         
         

@@ -1,5 +1,6 @@
 from PyQt5.QtGui import QVector2D
 import abc
+import math
 
 class Individual():
 
@@ -19,6 +20,15 @@ class Individual():
 #         print(self.position, end=', new position: ')
         self.position = self.position + self.velocity * time
 #         print(self.position)
+
+    def calculateAngle(self):
+        if self.velocity.x() == 0:
+            self.angle = 90 * self.velocity.y()/abs(self.velocity.y())
+        else:
+            self.angle = math.atan(self.velocity.y()/self.velocity.x()) * 180/math.pi
+        print("ID: {id},unmodified angle: {ang:.2f}".format(id=self.id, ang=self.angle), end=', ')
+        if self.velocity.x() < 0:
+            self.angle = 180 + self.angle
 
     @abc.abstractmethod
     def draw(self, painter, screen_size):

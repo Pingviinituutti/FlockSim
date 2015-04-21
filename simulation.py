@@ -7,11 +7,13 @@ from individual import Individual
 from bird import Bird
 from rule import Rule
 from alignment import Alignment
+from cohesion import Cohesion
+from separation import Separation
 
 class Simulation(QWidget):
     
     title = "Flock Simulator 2015"
-    tick_rate = 2 # how many milliseconds between each tick
+    tick_rate = 1 # how many milliseconds between each tick
     
     def __init__(self):
         self.width = 1280
@@ -21,7 +23,8 @@ class Simulation(QWidget):
         self.draw_coordinate_axes = True
         self.k = 0.01 # time coefficient
         self.individuals = []
-        self.num_individuals = 1
+        self.num_individuals = 2
+        self.rules = []
         
         super().__init__()
         
@@ -43,9 +46,12 @@ class Simulation(QWidget):
     
     def initSimulation(self):
         size = self.size()
+        self.rules.append(Separation(1))
+        self.rules.append(Alignment(0.0001))
+        self.rules.append(Cohesion(0.00001))
         for i in range(self.num_individuals):
 #             self.individuals.append(Bird(len(self.individuals) + 1 , random.randint(1, size.width()-1), random.randint(1, size.height()-1), random.randint(-5,5), random.randint(-5,5)))
-            self.individuals.append(Bird(len(self.individuals) + 1 , 0, 0, random.randint(-5,5), random.randint(-5,5)))
+            self.individuals.append(Bird(len(self.individuals) + 1 , random.randint(-size.width()/2,size.width()/2), random.randint(-size.height()/2,size.height()/2), random.randint(-10,10), random.randint(-10,10)))
         
         self.ticker = QBasicTimer()
         self.timer = QElapsedTimer()
@@ -62,6 +68,10 @@ class Simulation(QWidget):
             
     def simulate(self, time):
         for i in self.individuals:
+            for r in self.rules:
+                if len(self.individuals) == 1:
+                    break
+                r.algorithm(self.individuals, i)
             i.move(time*self.k)
 
     def drawFrame(self):

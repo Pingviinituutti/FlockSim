@@ -1,8 +1,7 @@
 from rule import Rule
 from PyQt5.Qt import QVector2D
 
-class Alignment(Rule):
-
+class Cohesion(Rule):
     def __init__(self, coefficient):
         Rule.__init__(self, coefficient)
         
@@ -11,9 +10,10 @@ class Alignment(Rule):
         for i in individuals:
             if i is individual:
                 continue
-            sum_vector += i.velocity
-        sum_vector *= (self.coefficient / (len(individuals) - 1))
+            sum_vector += i.position
+            
+        sum_vector /= (len(individuals) - 1)
+        sum_vector -= individual.position
+        sum_vector *= (self.coefficient)
         individual.velocity += sum_vector
-        
-        
         

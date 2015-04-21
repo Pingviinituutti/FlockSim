@@ -1,8 +1,7 @@
 from rule import Rule
 from PyQt5.Qt import QVector2D
 
-class Alignment(Rule):
-
+class Separation(Rule):
     def __init__(self, coefficient):
         Rule.__init__(self, coefficient)
         
@@ -11,9 +10,9 @@ class Alignment(Rule):
         for i in individuals:
             if i is individual:
                 continue
-            sum_vector += i.velocity
+            tmp_vector = individual.position - i.position
+            tmp_vector /= tmp_vector.lengthSquared()
+            sum_vector += tmp_vector
         sum_vector *= (self.coefficient / (len(individuals) - 1))
         individual.velocity += sum_vector
-        
-        
         
