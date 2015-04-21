@@ -12,18 +12,16 @@ class Simulation(QWidget):
     width = 800
     height = 640
     max_fps = 60
-    k = 1 # time coefficient
-    individuals = []
     
     def __init__(self):
+        self.show_fps = True
+        self.k = 0.00001 # time coefficient
+        self.individuals = []
+        
         super().__init__()
         
         self.initUI()
-#         self.initPainter()
         self.initSimulation()
-#         self.painter = QPainter(self)
-#         self.painter.beg
-        self.show_fps = True
         
     def initUI(self):
         
@@ -37,49 +35,47 @@ class Simulation(QWidget):
         self.setPalette(white)
     
         self.show()
-        
-#     def getFrame(self):
-#         return self.time * self.k
     
     def initSimulation(self):
         size = self.size()
         for i in range(4):
-            self.individuals.append(Bird(len(self.individuals) + 1 , random.randint(1, size.width()-1), random.randint(1, size.height()-1), 0, 0))
+            self.individuals.append(Bird(len(self.individuals) + 1 , random.randint(1, size.width()-1), random.randint(1, size.height()-1), random.randint(-5,5), random.randint(-5,5)))
         
         self.ticker = QBasicTimer()
         self.timer = QElapsedTimer()
-#         self.timer.start(100)
+        
         self.ticker.start(1, self)
         self.timer.start()
+        
         self.previous_time = self.timer.elapsed()
         self.fps = 0
-#         self.time = self.timer.elapsed()
-        
-#         self.clicks = 0
-#         for i in range(1,4)
 
     def timerEvent(self, e):
 #         self.clicks += 1
 #         print("timer event!")
-        if self.timer.elapsed() - self.previous_time > 1000 / self.max_fps:
+        time = self.timer.elapsed()
+        self.simulate(time)
+        if time - self.previous_time > 1000 / self.max_fps:
             
-            self.fps = 1000/(self.timer.elapsed() - self.previous_time)
-            print(self.fps, end=", ")
-            print(self.previous_time, end=', ')
-            self.previous_time = self.timer.elapsed()
+            self.fps = 1000/(time - self.previous_time)
+#             print("{fps:.2f}".format(fps=self.fps), end=", ")
+#             print(self.previous_time, end=', ')
+            self.previous_time = time
 #             self.time = self.timer.elapsed()
-            print(self.previous_time)
+#             print(self.previous_time)
             self.update()
+            
+    def simulate(self, time):
+        for i in self.individuals:
+            i.move(time*self.k)
         
     def drawFPS(self, painter):
 #         print(self.clicks)
         painter.setPen(Qt.red)
         painter.setFont(QFont('Decorative', 10))
-        painter.drawText(self.rect(), Qt.AlignLeft, str(self.fps))
+        painter.drawText(self.rect(), Qt.AlignLeft, "{fps:.2f}".format(fps=self.fps))
 
     def drawFrame(self):
-        
-            
         painter = QPainter()
         painter.begin(self)
         
@@ -101,8 +97,6 @@ class Simulation(QWidget):
             i.draw(painter)
 
         painter.end()
-#         self.update()
-#         print(self.timer.elapsed())
         
     def paintEvent(self, e):
 #         print("paint event!")
@@ -112,7 +106,7 @@ class Simulation(QWidget):
         
         if e.key() == Qt.Key_Escape:
             self.close()
-        elif e.key() == Qt.Key_Tab:
+        if e.key() == Qt.Key_F2:
             self.show_fps = (not self.show_fps)
             
 #         if e.key() == Qt.Key_Space:

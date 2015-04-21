@@ -15,7 +15,7 @@ class Bird(Individual):
         
     def move(self, simulation):
         if self.velocity.length() > self.max_speed:
-            self.velocity /= (self.velocity.length()/10)
+            self.velocity /= (self.velocity.length())
         Individual.move(self, simulation)
         
     def draw(self, painter):

@@ -16,5 +16,9 @@ class Individual():
 #         self.velocity = velocity
         
     def move(self, time):
-        new_position = self.position + self.velocity * time
+#         print(self.position, end=', new position: ')
+        self.position = self.position + self.velocity * time
+#         print(self.position)
+        
+        
         
