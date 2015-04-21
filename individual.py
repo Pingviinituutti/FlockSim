@@ -1,5 +1,5 @@
 from PyQt5.QtGui import QVector2D
-
+import abc
 
 class Individual():
 
@@ -19,6 +19,11 @@ class Individual():
 #         print(self.position, end=', new position: ')
         self.position = self.position + self.velocity * time
 #         print(self.position)
+
+    @abc.abstractmethod
+    def draw(self, painter, screen_size):
+        """draw the individual"""
+        return
         
         
         
