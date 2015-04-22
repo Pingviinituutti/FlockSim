@@ -79,7 +79,7 @@ class Simulation(QWidget):
         self.rules.append(Separation(1))
         self.rules.append(Alignment(0.0001))
         self.rules.append(Cohesion(0.00001))
-        self.rules.append(toOrigin(0.00001))      
+        self.rules.append(toOrigin(0.00001))    
         
 #     def resetCoefficients(self):
          
@@ -182,6 +182,28 @@ class Simulation(QWidget):
 #             print(self.previous_time)
             self.update()
             
+    def rewind(self):
+        if self.k > 0:
+            self.k = -0.01
+        else:
+            self.k *= 2
+            
+    def fastForward(self):
+        if self.k < 0:
+            self.k = 0.02
+        else:
+            self.k *= 2
+            
+    def play(self):
+        self.k = 0.01
+        self.resetTimer()
+        self.update()
+        
+    def pause(self):
+        self.k = 0.01
+        self.ticker.stop()
+        self.update()
+            
     def paintEvent(self, e):
 #         print("paint event!")
         self.drawFrame()
@@ -198,9 +220,9 @@ class Simulation(QWidget):
             self.update()
         if e.key() == Qt.Key_Space:
             if self.ticker.isActive():
-                self.ticker.stop()
+                self.pause()
             else:
-                self.resetTimer()
+                self.play()
         if e.key() == Qt.Key_Plus:
             self.scale *= 2
             self.update()
@@ -210,6 +232,13 @@ class Simulation(QWidget):
         if e.key() == Qt.Key_R:
             self.resetSimulation()
             self.update()
+        if e.key() == Qt.Key_A:
+            self.rewind()
+        if e.key() == Qt.Key_E:
+            self.fastForward()
+        if e.key() == Qt.Key_O:
+            self.play()
+        
             
 #         if e.key() == Qt.Key_Space:
 #             self.drawFrame()
