@@ -4,6 +4,7 @@ from PyQt5.Qt import QVector2D
 class Separation(Rule):
     def __init__(self, coefficient):
         Rule.__init__(self, coefficient)
+        self.name = "Separation rule"
         
     def algorithm(self, individuals, individual):
         sum_vector = QVector2D(0, 0)

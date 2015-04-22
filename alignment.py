@@ -5,6 +5,7 @@ class Alignment(Rule):
 
     def __init__(self, coefficient):
         Rule.__init__(self, coefficient)
+        self.name = "Alignment rule"
         
     def algorithm(self, individuals, individual):
         sum_vector = QVector2D(0, 0)

@@ -9,6 +9,8 @@ from rule import Rule
 from alignment import Alignment
 from cohesion import Cohesion
 from separation import Separation
+from PyQt5.Qt import QVBoxLayout, QHBoxLayout
+from slider import Slider
 
 class Simulation(QWidget):
     
@@ -35,6 +37,25 @@ class Simulation(QWidget):
         
     def initUI(self):
         
+        vbox = QVBoxLayout()
+        hbox = QHBoxLayout()
+        
+        # initialize sliders
+        self.sliders = []
+        for r in self.rules:
+            slider = QSlider(Qt.Horizontal, self)
+            slider.valueChanged.connect(self.changeValue)
+            vbox.addStretch(1)
+            self.sliders.append(slider)
+            vbox.addWidget(slider)
+        vbox.addStretch(8)
+
+        hbox.addStretch()
+        hbox.addStretch()
+        hbox.addLayout(vbox)
+        
+        self.setLayout(hbox)
+        
         self.setGeometry(10, 30, self.width, self.height)
         self.setWindowTitle(self.title)
         self.setWindowIcon(QIcon('icon.png'))
@@ -43,11 +64,15 @@ class Simulation(QWidget):
         white = self.palette()
         white.setColor(self.backgroundRole(), Qt.white)
         self.setPalette(white)
-        
-        # initialize sliders
-        slider = QSlider(Qt.Horizontal, self)  
-    
+            
         self.show()
+        
+    def changeValue(self, value):
+        
+        for i in range(1,len(self.rules)):
+            print("Setting {rname} to value {sval}".format(rname = self.rules[1].name, sval = self.sliders[1].value()))
+            self.rules[i].setCoefficient(self.sliders[1].value())
+            
         
     def initRules(self):
         self.rules.append(Separation(1))
