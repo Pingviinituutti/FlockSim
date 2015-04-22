@@ -117,7 +117,9 @@ class Simulation(QWidget):
             for r in self.rules:
                 if len(self.individuals) == 1:
                     break
-                rule_vector += r.algorithm(self.individuals, i)
+                tmp_vector = r.algorithm(self.individuals, i)
+                rule_vector += tmp_vector 
+                print(r.name, tmp_vector)
 #             print(i.id, time, self.k)
             i.updateVectors(self.k, rule_vector)
             i.move(time*self.k)

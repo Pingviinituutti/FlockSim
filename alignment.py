@@ -13,7 +13,8 @@ class Alignment(Rule):
             if i is individual:
                 continue
             sum_vector += i.velocity
-        sum_vector *= (self.coefficient / (len(individuals) - 1))
+        # multiply this coefficient with 10 because it is significantly less effective than the other rules
+        sum_vector *= (self.coefficient * 10 / (len(individuals) - 1)) 
         return sum_vector
 #         individual.velocity += sum_vector
         
