@@ -14,7 +14,8 @@ class Alignment(Rule):
                 continue
             sum_vector += i.velocity
         sum_vector *= (self.coefficient / (len(individuals) - 1))
-        individual.velocity += sum_vector
+        return sum_vector
+#         individual.velocity += sum_vector
         
         
         

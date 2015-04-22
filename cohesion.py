@@ -16,5 +16,6 @@ class Cohesion(Rule):
         sum_vector /= (len(individuals) - 1)
         sum_vector -= individual.position
         sum_vector *= (self.coefficient)
-        individual.velocity += sum_vector
+        return sum_vector
+#         individual.velocity += sum_vector
         

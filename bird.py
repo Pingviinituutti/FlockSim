@@ -1,5 +1,5 @@
 # from PyQt5.QtGui import QVector2D
-from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont
+from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont, QVector2D
 from individual import Individual
 import math
 

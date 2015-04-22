@@ -15,5 +15,6 @@ class Separation(Rule):
             tmp_vector /= tmp_vector.lengthSquared()
             sum_vector += tmp_vector
         sum_vector *= (self.coefficient / (len(individuals) - 1))
-        individual.velocity += sum_vector
+        return sum_vector
+#         individual.velocity += sum_vector
         

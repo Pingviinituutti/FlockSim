@@ -1,7 +1,7 @@
 import sys, random
 from PyQt5.QtWidgets import QApplication, QWidget, QSlider
 from PyQt5.QtGui import QIcon
-from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont
+from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont, QVector2D
 from PyQt5.QtCore import Qt, QElapsedTimer, QTimer, QBasicTimer, pyqtSignal
 from individual import Individual
 from bird import Bird
@@ -113,11 +113,13 @@ class Simulation(QWidget):
         if time == 0:
             return
         for i in self.individuals:
+            rule_vector = QVector2D(0, 0)
             for r in self.rules:
                 if len(self.individuals) == 1:
                     break
-                r.algorithm(self.individuals, i)
+                rule_vector += r.algorithm(self.individuals, i)
 #             print(i.id, time, self.k)
+            i.updateVectors(self.k, rule_vector)
             i.move(time*self.k)
 
     def drawFrame(self):

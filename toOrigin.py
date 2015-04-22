@@ -11,5 +11,6 @@ class toOrigin(Rule):
         sum_vector = -individual.position
         
         sum_vector *= self.coefficient
-        individual.velocity += sum_vector
+        return sum_vector
+#         individual.velocity += sum_vector
         
