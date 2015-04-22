@@ -11,6 +11,7 @@ from cohesion import Cohesion
 from separation import Separation
 from PyQt5.Qt import QVBoxLayout, QHBoxLayout
 from slider import Slider
+from toOrigin import toOrigin
 
 class Simulation(QWidget):
     
@@ -18,16 +19,17 @@ class Simulation(QWidget):
     tick_rate = 1 # how many milliseconds between each tick
     
     def __init__(self):
-        self.width = 1280
-        self.height = 800
+        self.width = 800
+        self.height = 640
         self.max_fps = 60
         self.show_fps = True
         self.draw_coordinate_axes = True
         self.k = 0.01 # time coefficient
         self.individuals = []
-        self.num_individuals = 5
+        self.num_individuals = 15
         self.rules = []
         self.scale = 1
+        self.slider_accuracy = 100
         
         super().__init__()
         
@@ -43,7 +45,7 @@ class Simulation(QWidget):
         # initialize sliders
         self.sliders = []
         for r in self.rules:
-            slider = QSlider(Qt.Horizontal, self)
+            slider = Slider(Qt.Horizontal, self, r, self.slider_accuracy)
             slider.valueChanged.connect(self.changeValue)
             vbox.addStretch(1)
             self.sliders.append(slider)
@@ -67,17 +69,20 @@ class Simulation(QWidget):
             
         self.show()
         
-    def changeValue(self, value):
-        
-        for i in range(1,len(self.rules)):
-            print("Setting {rname} to value {sval}".format(rname = self.rules[1].name, sval = self.sliders[1].value()))
-            self.rules[i].setCoefficient(self.sliders[1].value())
+    def changeValue(self, value):         
+        for i in range(len(self.rules)):
+            print("Setting {rname} to value {sval}".format(rname = self.rules[i].name, sval = self.sliders[i].value()))
+            self.rules[i].setCoefficient(self.sliders[i].value()/self.slider_accuracy/100)
             
         
     def initRules(self):
         self.rules.append(Separation(1))
         self.rules.append(Alignment(0.0001))
         self.rules.append(Cohesion(0.00001))
+        self.rules.append(toOrigin(0.00001))      
+        
+#     def resetCoefficients(self):
+         
     
     def initSimulation(self):
         size = self.size()
@@ -98,6 +103,11 @@ class Simulation(QWidget):
         self.previous_time = self.timer.elapsed()
         self.previous_tick = self.previous_time
         self.fps = 0
+        
+    def resetSimulation(self):
+        self.individuals.clear()
+        self.initSimulation()
+        self.resetTimer()
             
     def simulate(self, time):
         if time == 0:
@@ -197,7 +207,9 @@ class Simulation(QWidget):
         if e.key() == Qt.Key_Minus:
             self.scale /= 2
             self.update()
-        
+        if e.key() == Qt.Key_R:
+            self.resetSimulation()
+            self.update()
             
 #         if e.key() == Qt.Key_Space:
 #             self.drawFrame()

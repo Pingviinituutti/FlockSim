@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt, QRect
 
 class Bird(Individual):
     
-    max_speed = 10
+    max_speed = 100
     max_turn_rate = 30 # degrees
 
     def __init__(self, id, x, y, velo_x, velo_y):
@@ -17,8 +17,8 @@ class Bird(Individual):
         self.sprite.load('bird', 'png')
         
     def move(self, time):
-#         if self.velocity.length() > self.max_speed:
-#             self.velocity /= (self.velocity.length())
+        if self.velocity.length() > self.max_speed:
+            self.velocity /= 1.1 #(self.velocity.length() * self.max_speed)
         Individual.move(self, time)
         
     def draw(self, painter, screen_size):
