@@ -25,7 +25,7 @@ class Simulation(QWidget):
         self.draw_coordinate_axes = True
         self.k = 0.01 # time coefficient
         self.individuals = []
-        self.num_individuals = 15
+        self.num_individuals = 5
         self.rules = []
         self.scale = 1
         
@@ -127,9 +127,19 @@ class Simulation(QWidget):
             i.draw(painter, self.size())
 #             painter.restore()
 
+        self.drawLabels(painter)
         # draw fps counter last so that it won't be draw behind anything
         self.drawFPS(painter)
         painter.end()
+        
+    def drawLabels(self, painter):
+        layout = self.layout().itemAt(2)
+        painter.setPen(Qt.red)
+        painter.setFont(QFont('Decorative', 10))
+        painter.resetTransform()
+        for i in range(len(self.rules)):
+#             print(i,self.rules[i].name)
+            painter.drawText(layout.itemAt(i*2).geometry(), Qt.AlignLeft, self.rules[i].name)    
         
     def drawCoordinateAxes(self, painter):
         if not self.draw_coordinate_axes:
