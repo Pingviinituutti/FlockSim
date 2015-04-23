@@ -54,21 +54,17 @@ class Simulation(QWidget):
         
         time_control = QHBoxLayout()
         rewindb = QPushButton('Rewind')
-        playb = QPushButton('Pause')
+        self.playb = QPushButton('Pause')
         forwardb = QPushButton('Fastforward')
         
-#         rewindb.setCheckable(True)
-#         playb.setCheckable(True)
-#         forwardb.setCheckable(True)
-        
         rewindb.clicked[bool].connect(self.manipulateTime)
-        playb.clicked[bool].connect(self.manipulateTime)
+        self.playb.clicked[bool].connect(self.manipulateTime)
         forwardb.clicked[bool].connect(self.manipulateTime)
         
-        playb.setChecked(True)
+        self.playb.setChecked(True)
         
         time_control.addWidget(rewindb)
-        time_control.addWidget(playb)
+        time_control.addWidget(self.playb)
         time_control.addWidget(forwardb)
         vbox.addLayout(time_control)
         vbox.addStretch(8)
@@ -102,26 +98,19 @@ class Simulation(QWidget):
         if source.text() == "Rewind":
             self.rewind()
         elif source.text() == "Play":
-            source.setText("Pause")
+#             source.setText("Pause")
             self.play()
         elif source.text() == "Pause":
-            source.setText("Play")
+#             source.setText("Play")
             self.pause()
         else:
             self.fastForward()
-        
-        
-            
-            
         
     def initRules(self):
         self.rules.append(Separation(1))
         self.rules.append(Alignment(0.0001))
         self.rules.append(Cohesion(0.00001))
         self.rules.append(toOrigin(0.00001))    
-        
-#     def resetCoefficients(self):
-         
     
     def initSimulation(self):
         size = self.size()
@@ -242,11 +231,13 @@ class Simulation(QWidget):
     def play(self):
         self.k = 0.01
         self.resetTimer()
+        self.playb.setText("Pause")
         self.update()
         
     def pause(self):
         self.k = 0.01
         self.ticker.stop()
+        self.playb.setText("Play")
         self.update()
             
     def paintEvent(self, e):
@@ -284,15 +275,9 @@ class Simulation(QWidget):
         if e.key() == Qt.Key_O:
             self.play()
         
-            
-#         if e.key() == Qt.Key_Space:
-#             self.drawFrame()
-        
-        
 if __name__ == '__main__':
     
     app = QApplication(sys.argv)
     sim = Simulation()
-#     sim.drawFrame()
     sys.exit(app.exec_())  
     
