@@ -38,6 +38,7 @@ class Simulation(QWidget):
         
         self.initRules()
         self.initUI()
+        self.initTimers()
         self.initSimulation()
         
     def initUI(self):
@@ -122,10 +123,11 @@ class Simulation(QWidget):
 #             self.individuals.append(Bird(len(self.individuals) + 1 , 0, 0, random.randint(-10,10), random.randint(-10,10)))
 #             self.individuals.append(Bird(len(self.individuals) + 1 , 0, 0, 3, 2))
         
+        self.resetTimer()
+        
+    def initTimers(self):
         self.ticker = QBasicTimer()
         self.timer = QElapsedTimer()
-        
-        self.resetTimer()
         
     def resetTimer(self):
         self.ticker.start(self.tick_rate, self)
