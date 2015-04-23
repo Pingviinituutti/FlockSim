@@ -2,7 +2,7 @@ import sys, random
 from PyQt5.QtWidgets import QApplication, QWidget, QSlider, QPushButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont, QVector2D
-from PyQt5.QtCore import Qt, QElapsedTimer, QTimer, QBasicTimer, pyqtSignal
+from PyQt5.QtCore import Qt, QElapsedTimer, QTimer, QBasicTimer, pyqtSignal, QPoint
 from individual import Individual
 from bird import Bird
 from rule import Rule
@@ -30,6 +30,9 @@ class Simulation(QWidget):
         self.rules = []
         self.scale = 1
         self.slider_accuracy = 100
+        self.mouse_down = False
+        self.mouse_down_position = QVector2D(0, 0)
+        self.mouse_translation = QPoint(0, 0)
         
         super().__init__()
         
@@ -165,6 +168,7 @@ class Simulation(QWidget):
         for i in self.individuals:
             painter.resetTransform()
             painter.translate(self.size().width()/2, self.size().height()/2)
+            painter.translate(-self.mouse_translation.x(), -self.mouse_translation.y())
             painter.scale(self.scale, self.scale)
             i.draw(painter, self.size())
 #             painter.restore()
@@ -187,6 +191,7 @@ class Simulation(QWidget):
         if not self.draw_coordinate_axes:
             return
         painter.setPen(Qt.black)
+        painter.translate(-self.mouse_translation.x(), -self.mouse_translation.y())
         painter.drawLine(-self.size().width()/2, 0, self.size().width()/2, 0)
         painter.drawLine(0, -self.size().height()/2, 0, self.size().height()/2)
             
@@ -243,6 +248,23 @@ class Simulation(QWidget):
     def paintEvent(self, e):
 #         print("paint event!")
         self.drawFrame()
+        
+    def mousePressEvent(self, e):
+        self.mouse_down = True
+        self.mouse_down_position = e.pos()
+        self.previous_translation = self.mouse_translation
+        print("mdown",e.pos())
+        
+    def mouseMoveEvent(self, e):
+        if self.mouse_down:
+            print("move",e.pos(), end=", ")
+            self.mouse_translation = self.previous_translation + self.mouse_down_position - e.pos()
+            print(self.mouse_translation)
+            self.update()
+        
+    def mouseReleaseEvent(self, e):
+        self.mouse_down = False
+        print("up", e.pos())
 
     def keyPressEvent(self, e):
         
