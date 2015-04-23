@@ -1,5 +1,5 @@
 import sys, random
-from PyQt5.QtWidgets import QApplication, QWidget, QSlider
+from PyQt5.QtWidgets import QApplication, QWidget, QSlider, QPushButton
 from PyQt5.QtGui import QIcon
 from PyQt5.QtGui import QPainter, QColor, QPixmap, QFont, QVector2D
 from PyQt5.QtCore import Qt, QElapsedTimer, QTimer, QBasicTimer, pyqtSignal
@@ -50,6 +50,27 @@ class Simulation(QWidget):
             vbox.addStretch(1)
             self.sliders.append(slider)
             vbox.addWidget(slider)
+        vbox.addStretch(1)
+        
+        time_control = QHBoxLayout()
+        rewindb = QPushButton('Rewind')
+        playb = QPushButton('Pause')
+        forwardb = QPushButton('Fastforward')
+        
+#         rewindb.setCheckable(True)
+#         playb.setCheckable(True)
+#         forwardb.setCheckable(True)
+        
+        rewindb.clicked[bool].connect(self.manipulateTime)
+        playb.clicked[bool].connect(self.manipulateTime)
+        forwardb.clicked[bool].connect(self.manipulateTime)
+        
+        playb.setChecked(True)
+        
+        time_control.addWidget(rewindb)
+        time_control.addWidget(playb)
+        time_control.addWidget(forwardb)
+        vbox.addLayout(time_control)
         vbox.addStretch(8)
 
         hbox.addStretch()
@@ -69,10 +90,28 @@ class Simulation(QWidget):
             
         self.show()
         
-    def changeValue(self, value):         
-        for i in range(len(self.rules)):
-            print("Setting {rname} to value {sval}".format(rname = self.rules[i].name, sval = self.sliders[i].value()))
-            self.rules[i].setCoefficient(self.sliders[i].value()/self.slider_accuracy/100)
+    def changeValue(self, value):
+        source = self.sender()
+        
+        print("Setting {rname} to value {sval}".format(rname = source.rule.name, sval = value))
+        source.rule.setCoefficient(value/self.slider_accuracy/100)
+        
+    def manipulateTime(self, pressed):
+        source = self.sender()
+        
+        if source.text() == "Rewind":
+            self.rewind()
+        elif source.text() == "Play":
+            source.setText("Pause")
+            self.play()
+        elif source.text() == "Pause":
+            source.setText("Play")
+            self.pause()
+        else:
+            self.fastForward()
+        
+        
+            
             
         
     def initRules(self):
@@ -187,6 +226,8 @@ class Simulation(QWidget):
             self.update()
             
     def rewind(self):
+        if not self.ticker.isActive():
+            self.play()
         if self.k > 0:
             self.k = -0.01
         else:
