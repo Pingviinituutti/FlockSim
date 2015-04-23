@@ -265,6 +265,15 @@ class Simulation(QWidget):
     def mouseReleaseEvent(self, e):
         self.mouse_down = False
         print("up", e.pos())
+        
+    def wheelEvent(self, e):
+        print(e.angleDelta().y())
+        if e.angleDelta().y() > 0:
+            self.scale *= 2
+        else:
+            self.scale /= 2
+        self.update()
+        
 
     def keyPressEvent(self, e):
         
