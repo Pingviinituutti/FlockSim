@@ -129,6 +129,8 @@ class Simulation(QWidget):
         self.update()
         
     def removeIndividual(self, id = 0):
+        if len(self.individuals) == 0:
+            return
         if id == 0:
             self.individuals.pop()
         else:
