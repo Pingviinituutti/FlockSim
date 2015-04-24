@@ -26,13 +26,15 @@ class Simulation(QWidget):
         self.draw_coordinate_axes = True
         self.k = 0.01 # time coefficient
         self.individuals = []
-        self.num_individuals = 15
         self.rules = []
         self.scale = 1
         self.slider_accuracy = 100
-        self.mouse_down = False
+        self.right_mouse_down = False
         self.mouse_down_position = QVector2D(0, 0)
         self.mouse_translation = QPoint(0, 0)
+        self.left_mouse_down = False
+        self.left_mouse_start_position = QPoint(0, 0)
+        self.left_mouse_position = QPoint(0, 0)
         
         super().__init__()
         
@@ -56,6 +58,7 @@ class Simulation(QWidget):
             vbox.addWidget(slider)
         vbox.addStretch(1)
         
+        # time controls
         time_control = QHBoxLayout()
         rewindb = QPushButton('Rewind')
         self.playb = QPushButton('Pause')
@@ -65,12 +68,28 @@ class Simulation(QWidget):
         self.playb.clicked[bool].connect(self.manipulateTime)
         forwardb.clicked[bool].connect(self.manipulateTime)
         
-        self.playb.setChecked(True)
-        
         time_control.addWidget(rewindb)
         time_control.addWidget(self.playb)
         time_control.addWidget(forwardb)
         vbox.addLayout(time_control)
+        
+        # individual controls
+        vbox.addStretch(1)
+        individual_control = QHBoxLayout()
+        remove_indb = QPushButton('-')
+        self.show_indb = QPushButton('0')
+        add_indb = QPushButton('+')
+        
+        self.show_indb.setFlat(True)
+        remove_indb.clicked[bool].connect(self.removeIndividual)
+        add_indb.clicked[bool].connect(self.addIndividual)
+        
+        individual_control.addWidget(remove_indb)
+        individual_control.addWidget(self.show_indb)
+        individual_control.addWidget(add_indb)
+        
+        vbox.addLayout(individual_control)
+        
         vbox.addStretch(8)
 
         hbox.addStretch()
@@ -93,8 +112,29 @@ class Simulation(QWidget):
     def changeValue(self, value):
         source = self.sender()
         
-        print("Setting {rname} to value {sval}".format(rname = source.rule.name, sval = value))
+#         print("Setting {rname} to value {sval}".format(rname = source.rule.name, sval = value))
         source.rule.setCoefficient(value/self.slider_accuracy/100)
+        
+    def addIndividual(self, x = 0, y = 0, vx = 0, vy = 0):
+        if x == 0:
+            x = random.randint(-self.size().width(), self.size().width())
+        if y == 0:
+            y = random.randint(-self.size().height(), self.size().height())
+        if vx == 0:
+            vx = random.randint(-10,10)
+        if vy == 0:
+            vy = random.randint(-10,10)
+        self.individuals.append(Bird(len(self.individuals) + 1, x, y, vx, vy))
+        self.show_indb.setText(str(len(self.individuals)))
+        self.update()
+        
+    def removeIndividual(self, id = 0):
+        if id == 0:
+            self.individuals.pop()
+        else:
+            self.individuals.pop(id)
+        self.show_indb.setText(str(len(self.individuals)))
+        self.update()
         
     def manipulateTime(self, pressed):
         source = self.sender()
@@ -118,8 +158,8 @@ class Simulation(QWidget):
     
     def initSimulation(self):
         size = self.size()
-        for i in range(self.num_individuals):
-            self.individuals.append(Bird(len(self.individuals) + 1 , random.randint(-size.width()/2,size.width()/2), random.randint(-size.height()/2,size.height()/2), random.randint(-10,10), random.randint(-10,10)))
+        for i in range(15):
+            self.addIndividual(random.randint(-size.width()/2, size.width()/2), random.randint(-size.height()/2, size.height()/2))
 #             self.individuals.append(Bird(len(self.individuals) + 1 , 0, 0, random.randint(-10,10), random.randint(-10,10)))
 #             self.individuals.append(Bird(len(self.individuals) + 1 , 0, 0, 3, 2))
         
@@ -152,7 +192,7 @@ class Simulation(QWidget):
                     break
                 tmp_vector = r.algorithm(self.individuals, i)
                 rule_vector += tmp_vector 
-                print(r.name, tmp_vector)
+#                 print(r.name, tmp_vector)
 #             print(i.id, time, self.k)
             i.updateVectors(self.k, rule_vector)
             i.move(time*self.k)
@@ -175,10 +215,21 @@ class Simulation(QWidget):
             i.draw(painter, self.size())
 #             painter.restore()
 
+        self.drawSpeedArrow(painter)
+
         self.drawLabels(painter)
         # draw fps counter last so that it won't be draw behind anything
         self.drawFPS(painter)
         painter.end()
+        
+    def drawSpeedArrow(self, painter):
+        if not self.left_mouse_down:
+            return
+        painter.resetTransform()
+        
+#         painter.translate(self.size().width()/2, self.size().height()/2)
+        painter.setPen(Qt.red)
+        painter.drawLine(self.left_mouse_start_position, self.left_mouse_position)
         
     def drawLabels(self, painter):
         layout = self.layout().itemAt(2)
@@ -252,21 +303,42 @@ class Simulation(QWidget):
         self.drawFrame()
         
     def mousePressEvent(self, e):
-        self.mouse_down = True
-        self.mouse_down_position = e.pos()
-        self.previous_translation = self.mouse_translation
-        print("mdown",e.pos())
+        if e.button() == Qt.RightButton:
+            self.right_mouse_down = True
+            self.mouse_down_position = e.pos()
+            self.previous_translation = self.mouse_translation
+            print("mdown",e.pos())
+        elif e.button() == Qt.LeftButton:
+            self.left_mouse_down = True
+            self.left_mouse_start_position = e.pos()
+            self.left_mouse_position = self.left_mouse_start_position
+            print("left mouse down", e.pos())
         
     def mouseMoveEvent(self, e):
-        if self.mouse_down:
-            print("move",e.pos(), end=", ")
+        if self.right_mouse_down:
+            print("right mouse move",e.pos(), end=", ")
             self.mouse_translation = self.previous_translation + self.mouse_down_position - e.pos()
             print(self.mouse_translation)
-            self.update()
+            
+        elif self.left_mouse_down:
+            print("left mouse move", e.pos())
+            self.left_mouse_position = e.pos()
+        self.update()
         
     def mouseReleaseEvent(self, e):
-        self.mouse_down = False
-        print("up", e.pos())
+        if self.right_mouse_down:
+            print("right mouse up", e.pos())
+            self.right_mouse_down = False
+        if self.left_mouse_down:
+            print("left mouse up", self.left_mouse_position)
+            self.addIndividual((self.left_mouse_start_position.x() + self.mouse_translation.x() - self.size().width() / 2) / self.scale, 
+                               (self.left_mouse_start_position.y() + self.mouse_translation.y() - self.size().height() / 2) / self.scale, 
+                               (self.left_mouse_position - self.left_mouse_start_position).x() / self.size().width() * 100, 
+                               (self.left_mouse_position - self.left_mouse_start_position).y() / self.size().height() * 100)
+#             self.left_mouse_position.setX(0)
+#             self.left_mouse_position.setY(0)
+            self.left_mouse_down = False
+        self.update()
         
     def wheelEvent(self, e):
         print(e.angleDelta().y())
