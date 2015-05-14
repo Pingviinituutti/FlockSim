@@ -9,9 +9,10 @@ from rule import Rule
 from alignment import Alignment
 from cohesion import Cohesion
 from separation import Separation
-from PyQt5.Qt import QVBoxLayout, QHBoxLayout
+from PyQt5.Qt import QVBoxLayout, QHBoxLayout, QAction, QFileDialog
 from slider import Slider
 from toOrigin import toOrigin
+from test.test_buffer import indices
 
 class Simulation(QWidget):
     
@@ -19,11 +20,12 @@ class Simulation(QWidget):
     tick_rate = 1 # how many milliseconds between each tick
     
     def __init__(self):
+        
         self.width = 800
         self.height = 640
         self.max_fps = 60
         self.show_fps = True
-        self.draw_coordinate_axes = True
+        self.debug = True
         self.k = 0.01 # time coefficient
         self.individuals = []
         self.rules = []
@@ -42,6 +44,7 @@ class Simulation(QWidget):
         self.initUI()
         self.initTimers()
         self.initSimulation()
+        self.resetTimer()
         
     def initUI(self):
         
@@ -64,6 +67,11 @@ class Simulation(QWidget):
         self.playb = QPushButton('Pause')
         forwardb = QPushButton('Fastforward')
         
+        # make the buttons unfocusable
+        rewindb.setFocusPolicy(0)
+        self.playb.setFocusPolicy(0)
+        forwardb.setFocusPolicy(0)
+        
         rewindb.clicked[bool].connect(self.manipulateTime)
         self.playb.clicked[bool].connect(self.manipulateTime)
         forwardb.clicked[bool].connect(self.manipulateTime)
@@ -73,12 +81,16 @@ class Simulation(QWidget):
         time_control.addWidget(forwardb)
         vbox.addLayout(time_control)
         
-        # individual controls
+        # individual controls (e.g. adding or removing)
         vbox.addStretch(1)
         individual_control = QHBoxLayout()
         remove_indb = QPushButton('-')
         self.show_indb = QPushButton('0')
         add_indb = QPushButton('+')
+        
+        remove_indb.setFocusPolicy(0)
+        self.show_indb.setFocusPolicy(0)
+        add_indb.setFocusPolicy(0)
         
         self.show_indb.setFlat(True)
         remove_indb.clicked[bool].connect(self.removeIndividual)
@@ -89,6 +101,27 @@ class Simulation(QWidget):
         individual_control.addWidget(add_indb)
         
         vbox.addLayout(individual_control)
+        vbox.addStretch(1)
+        # save or load buttons
+#         openFile = QAction(QIcon('open.png'), 'Open', self)
+#         openFile.setShortcut('O')
+#         openFile.setStatusTip('Open new File')
+#         openFile.triggered.connect(self.showDialog)
+        
+        sim_files = QHBoxLayout()
+        save_game = QPushButton('Save')
+        load_game = QPushButton('Load')
+        
+        save_game.clicked[bool].connect(lambda: self.showDialog())
+        load_game.clicked[bool].connect(lambda: self.showDialog())
+        
+        save_game.setFocusPolicy(0)
+        load_game.setFocusPolicy(0)
+        
+        sim_files.addWidget(save_game)
+        sim_files.addWidget(load_game)
+        
+        vbox.addLayout(sim_files)
         
         vbox.addStretch(8)
 
@@ -109,10 +142,79 @@ class Simulation(QWidget):
             
         self.show()
         
+    def showDialog(self):
+        self.pause()
+        source = self.sender()
+        if source.text() == 'Load':
+            print("in load file dialog")
+            fname = QFileDialog.getOpenFileName(self, 'Open file', '', '*.sim')
+            print(fname[0])
+            self.loadSimulation(fname[0])
+            
+        elif source.text() == 'Save':
+            print("in save file dialog")
+            fname = QFileDialog.getSaveFileName(self, 'Save file', '', '*.sim')
+            print(fname)
+            fname = ''.join((fname[0].replace('.sim',''), fname[1].strip('*')))
+            print(fname)
+            
+            self.saveSimulation(fname)
+            
+            
+    def loadSimulation(self, fname):
+        f = open(fname, 'r')
+        chunk_list = []
+        line = f.readline()
+#         print("line: " +line)
+        while len(line) > 0:
+            if line == '\n':
+                line = f.readline()
+                continue
+            line = line.split(',')
+#             print(line[0])
+#             print(len(chunk_list))
+#             print(line[0])
+            if line[0].split()[0] == '#':
+                chunk_list.append([line])
+#                 print(len(chunk_list))
+            else:
+#                 print(len(chunk_list))
+                chunk_list[len(chunk_list)-1].append(line)
+#                 print(len(chunk_list))
+            line = f.readline()          
+        coefficient_chunk = []
+        individual_chunk = []    
+        for c in chunk_list:
+            if c[0] == '# koefficients\n':
+                coefficient_chunk = c
+            elif c[0] == '# individuals\n':
+                individual_chunk = c
+#             print(c)
+        for r in self.rules:
+            for i in range(1,len(coefficient_chunk)):
+                if r.name == coefficient_chunk[i][0]:
+                    r.coefficient = coefficient_chunk[i][1]
+        self.individuals.clear()
+        for i in range(1, len(individual_chunk)):
+            print(individual_chunk[i])
+            self.addIndividual(individual_chunk[1], individual_chunk[2], individual_chunk[3], individual_chunk[4])
+        f.close
+            
+            
+    def saveSimulation(self, fname):
+        f = open(fname, 'w+')
+        f.write("# FlockSimulator 2015 v1.0\n\n")
+        f.write("# koefficients\n")
+        for r in self.rules:
+            f.write("{rname},{c}\n".format(rname = r.name, c = r.coefficient))
+        
+        f.write("\n# individuals\n")
+        for i in self.individuals:
+            f.write("{id},{x},{y},{vx},{vy}\n".format(id = i.id, x = i.position.x(), y = i.position.y(), vx = i.velocity.x(), vy = i.velocity.y()))
+        f.close
+        
     def changeValue(self, value):
         source = self.sender()
-        
-#         print("Setting {rname} to value {sval}".format(rname = source.rule.name, sval = value))
         source.rule.setCoefficient(value/self.slider_accuracy/100)
         
     def addIndividual(self, x = 0, y = 0, vx = 0, vy = 0):
@@ -138,34 +240,17 @@ class Simulation(QWidget):
         self.show_indb.setText(str(len(self.individuals)))
         self.update()
         
-    def manipulateTime(self, pressed):
-        source = self.sender()
-        
-        if source.text() == "Rewind":
-            self.rewind()
-        elif source.text() == "Play":
-#             source.setText("Pause")
-            self.play()
-        elif source.text() == "Pause":
-#             source.setText("Play")
-            self.pause()
-        else:
-            self.fastForward()
-        
     def initRules(self):
         self.rules.append(Separation(1))
         self.rules.append(Alignment(0.0001))
         self.rules.append(Cohesion(0.00001))
         self.rules.append(toOrigin(0.00001))    
     
-    def initSimulation(self):
-        size = self.size()
-        for i in range(15):
+    def initSimulation(self, n = 5):
+        # spawns individuals inside the current screen
+        size = self.size() / self.scale / 3 * 2
+        for i in range(n):
             self.addIndividual(random.randint(-size.width()/2, size.width()/2), random.randint(-size.height()/2, size.height()/2))
-#             self.individuals.append(Bird(len(self.individuals) + 1 , 0, 0, random.randint(-10,10), random.randint(-10,10)))
-#             self.individuals.append(Bird(len(self.individuals) + 1 , 0, 0, 3, 2))
-        
-        self.resetTimer()
         
     def initTimers(self):
         self.ticker = QBasicTimer()
@@ -177,13 +262,21 @@ class Simulation(QWidget):
         
         self.previous_time = self.timer.elapsed()
         self.previous_tick = self.previous_time
+        self.simulation_time = 0
+        self.drawing_time = 0
         self.fps = 0
         
     def resetSimulation(self):
+        for i in self.individuals:
+            i.reset()
+        self.update()
+        
+    def newSimulation(self):
+        n = len(self.individuals)
         self.individuals.clear()
-        self.initSimulation()
-        self.resetTimer()
+        self.initSimulation(n)
             
+    # this calculates the position of the individuals in the simulation
     def simulate(self, time):
         if time == 0:
             return
@@ -193,34 +286,45 @@ class Simulation(QWidget):
                 if len(self.individuals) == 1:
                     break
                 tmp_vector = r.algorithm(self.individuals, i)
-                rule_vector += tmp_vector 
-#                 print(r.name, tmp_vector)
-#             print(i.id, time, self.k)
+                rule_vector += tmp_vector
             i.updateVectors(self.k, rule_vector)
             i.move(time*self.k)
+        self.simulation_time = self.timer.elapsed()
+            
+                
+    def manipulateTime(self, pressed):
+        source = self.sender()
+        if source.text() == "Rewind":
+            self.rewind()
+        elif source.text() == "Play":
+            self.play()
+        elif source.text() == "Pause":
+            self.pause()
+        else:
+            self.fastForward()
 
     def drawFrame(self):
         # define the presets for the painter and move origin to center of window
         painter = QPainter()
         painter.begin(self)
         painter.translate(self.size().width()/2, self.size().height()/2)
-#         painter.scale(self.scale, self.scale)
-#         painter.save()
         
         self.drawCoordinateAxes(painter)    
         
+        # draw the individuals
         for i in self.individuals:
             painter.resetTransform()
             painter.translate(self.size().width()/2, self.size().height()/2)
             painter.translate(-self.mouse_translation.x(), -self.mouse_translation.y())
             painter.scale(self.scale, self.scale)
-            i.draw(painter, self.size())
-#             painter.restore()
+            i.draw(painter, self.debug)
 
+        self.drawing_time = self.timer.elapsed()
         self.drawSpeedArrow(painter)
 
         self.drawLabels(painter)
-        # draw fps counter last so that it won't be draw behind anything
+        
+        # draw fps counter last so that it won't be drawn behind anything
         self.drawFPS(painter)
         painter.end()
         
@@ -229,7 +333,6 @@ class Simulation(QWidget):
             return
         painter.resetTransform()
         
-#         painter.translate(self.size().width()/2, self.size().height()/2)
         painter.setPen(Qt.red)
         painter.drawLine(self.left_mouse_start_position, self.left_mouse_position)
         
@@ -239,11 +342,10 @@ class Simulation(QWidget):
         painter.setFont(QFont('Decorative', 10))
         painter.resetTransform()
         for i in range(len(self.rules)):
-#             print(i,self.rules[i].name)
             painter.drawText(layout.itemAt(i*2).geometry(), Qt.AlignLeft, self.rules[i].name)    
         
     def drawCoordinateAxes(self, painter):
-        if not self.draw_coordinate_axes:
+        if not self.debug:
             return
         painter.setPen(Qt.black)
         painter.translate(-self.mouse_translation.x(), -self.mouse_translation.y())
@@ -251,27 +353,24 @@ class Simulation(QWidget):
         painter.drawLine(0, -self.size().height()/2, 0, self.size().height()/2)
             
     def drawFPS(self, painter):
-        if not self.show_fps:
+        if not self.show_fps and not self.debug:
             return
         painter.setPen(Qt.red)
         painter.setFont(QFont('Decorative', 10))
         painter.resetTransform()
-        painter.drawText(self.rect(), Qt.AlignLeft, "{fps:.2f}".format(fps=self.fps))
+        painter.drawText(0, 10, "FPS:{fps:.2f}".format(fps=self.fps))
+        if self.debug:
+            painter.drawText(0, 20, "SIMTIME:{simTime:.2f}".format(simTime=self.simulation_time - self.previous_tick))
+            painter.drawText(0, 30, "DRAWTIME{drawTime:.2f}".format(drawTime=self.drawing_time - self.simulation_time))
         
     def timerEvent(self, e):
-#         self.clicks += 1
-#         print("timer event!")
         time = self.timer.elapsed()
         self.simulate(time - self.previous_tick)
         self.previous_tick = time
         if time - self.previous_time > 1000 / self.max_fps:
             
             self.fps = 1000/(time - self.previous_time)
-#             print("{fps:.2f}".format(fps=self.fps), end=", ")
-#             print(self.previous_time, end=', ')
             self.previous_time = time
-#             self.time = self.timer.elapsed()
-#             print(self.previous_time)
             self.update()
             
     def rewind(self):
@@ -283,10 +382,13 @@ class Simulation(QWidget):
             self.k *= 2
             
     def fastForward(self):
-        if self.k < 0:
-            self.k = 0.02
+        if not self.ticker.isActive():
+            self.play()
         else:
-            self.k *= 2
+            if self.k < 0:
+                self.k = 0.02
+            else:
+                self.k *= 2
             
     def play(self):
         self.k = 0.01
@@ -301,7 +403,6 @@ class Simulation(QWidget):
         self.update()
             
     def paintEvent(self, e):
-#         print("paint event!")
         self.drawFrame()
         
     def mousePressEvent(self, e):
@@ -309,41 +410,31 @@ class Simulation(QWidget):
             self.right_mouse_down = True
             self.mouse_down_position = e.pos()
             self.previous_translation = self.mouse_translation
-            print("mdown",e.pos())
         elif e.button() == Qt.LeftButton:
             self.left_mouse_down = True
             self.left_mouse_start_position = e.pos()
             self.left_mouse_position = self.left_mouse_start_position
-            print("left mouse down", e.pos())
         
     def mouseMoveEvent(self, e):
         if self.right_mouse_down:
-            print("right mouse move",e.pos(), end=", ")
             self.mouse_translation = self.previous_translation + self.mouse_down_position - e.pos()
-            print(self.mouse_translation)
             
         elif self.left_mouse_down:
-            print("left mouse move", e.pos())
             self.left_mouse_position = e.pos()
         self.update()
         
     def mouseReleaseEvent(self, e):
         if self.right_mouse_down:
-            print("right mouse up", e.pos())
             self.right_mouse_down = False
         if self.left_mouse_down:
-            print("left mouse up", self.left_mouse_position)
             self.addIndividual((self.left_mouse_start_position.x() + self.mouse_translation.x() - self.size().width() / 2) / self.scale, 
                                (self.left_mouse_start_position.y() + self.mouse_translation.y() - self.size().height() / 2) / self.scale, 
                                (self.left_mouse_position - self.left_mouse_start_position).x() / self.size().width() * 100, 
                                (self.left_mouse_position - self.left_mouse_start_position).y() / self.size().height() * 100)
-#             self.left_mouse_position.setX(0)
-#             self.left_mouse_position.setY(0)
             self.left_mouse_down = False
         self.update()
         
     def wheelEvent(self, e):
-        print(e.angleDelta().y())
         if e.angleDelta().y() > 0:
             self.scale *= 2
         else:
@@ -359,7 +450,7 @@ class Simulation(QWidget):
             self.show_fps = (not self.show_fps)
             self.update()
         if e.key() == Qt.Key_F3:
-            self.draw_coordinate_axes = (not self.draw_coordinate_axes)
+            self.debug = (not self.debug)
             self.update()
         if e.key() == Qt.Key_Space:
             if self.ticker.isActive():
@@ -375,12 +466,15 @@ class Simulation(QWidget):
         if e.key() == Qt.Key_R:
             self.resetSimulation()
             self.update()
-        if e.key() == Qt.Key_A:
+        if e.key() == Qt.Key_N:
+            self.newSimulation()
+            self.update()
+        if e.key() == Qt.Key_Left:
             self.rewind()
-        if e.key() == Qt.Key_E:
+        if e.key() == Qt.Key_Right:
             self.fastForward()
-        if e.key() == Qt.Key_O:
-            self.play()
+#         if e.key() == Qt.Key_Space:
+#             self.play()
         
 if __name__ == '__main__':
     

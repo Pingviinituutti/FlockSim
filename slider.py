@@ -12,6 +12,7 @@ class Slider(QSlider):
         self.rule = rule
         self.setMinimum(-1 * accuracy)
         self.setMaximum(1 * accuracy)
+        self.setFocusPolicy(0)
         
 #     def valueChanged(self, value):
 #         print("slider change event!")
