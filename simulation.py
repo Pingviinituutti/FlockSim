@@ -185,19 +185,23 @@ class Simulation(QWidget):
         coefficient_chunk = []
         individual_chunk = []    
         for c in chunk_list:
-            if c[0] == '# koefficients\n':
+#             print(c[0])
+            if c[0][0] == '# koefficients\n':
                 coefficient_chunk = c
-            elif c[0] == '# individuals\n':
+            elif c[0][0] == '# individuals\n':
                 individual_chunk = c
 #             print(c)
+        print(coefficient_chunk)
         for r in self.rules:
             for i in range(1,len(coefficient_chunk)):
                 if r.name == coefficient_chunk[i][0]:
-                    r.coefficient = coefficient_chunk[i][1]
+                    r.coefficient = float(coefficient_chunk[i][1])
         self.individuals.clear()
+        print(individual_chunk)
         for i in range(1, len(individual_chunk)):
-            print(individual_chunk[i])
-            self.addIndividual(individual_chunk[1], individual_chunk[2], individual_chunk[3], individual_chunk[4])
+#             print(i)
+#             print(individual_chunk[i][1], individual_chunk[i][2], individual_chunk[i][3], individual_chunk[4])
+            self.addIndividual(float(individual_chunk[i][1]), float(individual_chunk[i][2]), float(individual_chunk[i][3]), float(individual_chunk[i][4]))
         f.close
             
             
@@ -206,11 +210,11 @@ class Simulation(QWidget):
         f.write("# FlockSimulator 2015 v1.0\n\n")
         f.write("# koefficients\n")
         for r in self.rules:
-            f.write("{rname},{c}\n".format(rname = r.name, c = r.coefficient))
+            f.write("{rname},{c:.10f}\n".format(rname = r.name, c = r.coefficient))
         
         f.write("\n# individuals\n")
         for i in self.individuals:
-            f.write("{id},{x},{y},{vx},{vy}\n".format(id = i.id, x = i.position.x(), y = i.position.y(), vx = i.velocity.x(), vy = i.velocity.y()))
+            f.write("{id},{x:.10f},{y:.10f},{vx:.10f},{vy:.10f}\n".format(id = i.id, x = i.position.x(), y = i.position.y(), vx = i.velocity.x(), vy = i.velocity.y()))
         f.close
         
     def changeValue(self, value):
