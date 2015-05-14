@@ -146,17 +146,17 @@ class Simulation(QWidget):
         self.pause()
         source = self.sender()
         if source.text() == 'Load':
-            print("in load file dialog")
+#             print("in load file dialog")
             fname = QFileDialog.getOpenFileName(self, 'Open file', '', '*.sim')
-            print(fname[0])
+#             print(fname[0])
             self.loadSimulation(fname[0])
             
         elif source.text() == 'Save':
-            print("in save file dialog")
+#             print("in save file dialog")
             fname = QFileDialog.getSaveFileName(self, 'Save file', '', '*.sim')
-            print(fname)
+#             print(fname)
             fname = ''.join((fname[0].replace('.sim',''), fname[1].strip('*')))
-            print(fname)
+#             print(fname)
             
             self.saveSimulation(fname)
             
@@ -191,13 +191,13 @@ class Simulation(QWidget):
             elif c[0][0] == '# individuals\n':
                 individual_chunk = c
 #             print(c)
-        print(coefficient_chunk)
+#         print(coefficient_chunk)
         for r in self.rules:
             for i in range(1,len(coefficient_chunk)):
                 if r.name == coefficient_chunk[i][0]:
                     r.coefficient = float(coefficient_chunk[i][1])
         self.individuals.clear()
-        print(individual_chunk)
+#         print(individual_chunk)
         for i in range(1, len(individual_chunk)):
 #             print(i)
 #             print(individual_chunk[i][1], individual_chunk[i][2], individual_chunk[i][3], individual_chunk[4])
